@@ -1,36 +1,31 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+from flask_cors import CORS  # Import CORS
+from transformers import pipeline
 import os
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Enable CORS for all routes
 
-# Set your Hugging Face token here
+# Set your Hugging Face token
 HUGGINGFACE_TOKEN = "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"  # Replace with your actual token
 
-# Load the Mistral model and tokenizer from Hugging Face
-model_name = "mistral/mistral-7b"
-tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=HUGGINGFACE_TOKEN)
-model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=HUGGINGFACE_TOKEN)
+# Load the Mistral 7B model
+generator = pipeline('text-generation', model='mistral-7b', 
+                     tokenizer='mistral-7b', 
+                     config={'use_auth_token': HUGGINGFACE_TOKEN})
 
 @app.route('/')
 def home():
-    return "Welcome to my Flask chatbot!"
+    return "Welcome to the Mistral Chatbot Assistant!"
 
 @app.route('/ask', methods=['POST'])
 def ask():
-    user_input = request.json.get('message')
-    
-    # Encode the input text and generate a response
-    inputs = tokenizer.encode(user_input, return_tensors="pt")
-    with torch.no_grad():
-        outputs = model.generate(inputs, max_length=50, num_return_sequences=1)
-    
-    # Decode the generated response and return it
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return jsonify({'response': response})
+    user_input = request.json.get('input')
+    if user_input:
+        response = generator(user_input, max_length=100, num_return_sequences=1)
+        return jsonify(response[0]['generated_text'])
+    else:
+        return jsonify({"error": "No input provided"}), 400
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=10000)  # Ensure the port matches Render's configuration
