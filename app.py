@@ -1,21 +1,19 @@
-from flask import Flask, request, jsonify
-
+from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Welcome to the Flask app!"
+    return render_template('index.html')  # Render the HTML file
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    user_input = request.json.get('message')
+    # Simple echo response for now
+    response = {
+        'reply': f"You said: {user_input}"
+    }
+    return jsonify(response)
 
 if __name__ == '__main__':
-    app.run()
-
-
-@app.route('/ask', methods=['POST'])
-def ask():
-    query = request.json.get('query')
-    # Add logic to process the query and generate a response
-    return jsonify({"response": f"You asked: {query}"})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=10000)
