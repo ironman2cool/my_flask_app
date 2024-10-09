@@ -1,17 +1,17 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
 from transformers import pipeline
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 # Set your Hugging Face token
 HUGGINGFACE_TOKEN = "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"  # Replace with your actual token
 
-# Load the Mistral 7B model
-generator = pipeline('text-generation', model='mistral-7b', 
-                     tokenizer='mistral-7b', 
+# Load a compatible model (e.g., gpt2)
+generator = pipeline('text-generation', model='gpt2', 
+                     tokenizer='gpt2', 
                      config={'use_auth_token': HUGGINGFACE_TOKEN})
 
 @app.route('/')
@@ -28,4 +28,4 @@ def ask():
         return jsonify({"error": "No input provided"}), 400
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)  # Ensure the port matches Render's configuration
+    app.run(host='0.0.0.0', port=10000)
